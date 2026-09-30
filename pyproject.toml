@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wb-mcp"
+version = "0.1.0.dev0"
+description = "MCP-сервер для API продавца Wildberries"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "AGPL-3.0-only AND LicenseRef-WB-MCP-Commercial"
+license-files = ["LICENSE", "wbmcp/cloud/LICENSE"]
+authors = [{ name = "S-typy" }]
+dependencies = [
+    "mcp>=2.2,<3",
+    "httpx>=0.27",
+    "pydantic>=2.7",
+    "jmespath>=1.0",
+]
+
+[project.optional-dependencies]
+crypto = ["cryptography>=42"]
+postgres = ["psycopg[binary,pool]>=3.2"]
+redis = ["redis>=5"]
+dev = [
+    "pytest>=8",
+    "pytest-cov>=5",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.6",
+    "cryptography>=42",
+    "psycopg[binary,pool]>=3.2",
+    "pgserver>=0.1",
+    "redis>=5",
+]
+
+[project.scripts]
+wb-mcp = "wbmcp.__main__:main"
+
+[project.urls]
+Repository = "https://github.com/S-typy/WB-MCP"
+
+[tool.setuptools.packages.find]
+include = ["wbmcp*"]
+
+[tool.setuptools.package-data]
+"wbmcp" = ["cloud/LICENSE", "specs/*/catalog.json", "specs/*/README.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=wbmcp --cov-report=term-missing --cov-fail-under=90"
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+branch = true
+
+[tool.ruff]
+line-length = 99
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D101", "D102", "D103", "D107"]
