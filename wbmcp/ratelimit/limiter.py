@@ -23,6 +23,7 @@ SANDBOX_INTERVAL_S = 1.0
 HEADER_RETRY = "x-ratelimit-retry"
 HEADER_RESET = "x-ratelimit-reset"
 PRIORITY_STEP_S = 0.05
+MIN_SLEEP_S = 0.001     # короче спать нет смысла, а нулевой сон зациклил бы ожидание
 
 
 def sandbox_rule(host: str) -> LimitRule:
@@ -118,7 +119,7 @@ class RateLimiter:
                 if wait <= 0:
                     await self._store.set(key, bucket.take(state, now, cost))
                     return Acquired(key=key, bucket=bucket, rule=rule, waited_s=waited)
-            wait += priority * PRIORITY_STEP_S
+            wait = max(wait, MIN_SLEEP_S) + priority * PRIORITY_STEP_S
             if waited + wait > self.max_wait_s:
                 raise RateLimitExceeded(key, wait)
             await self._sleep(wait)

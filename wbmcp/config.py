@@ -21,6 +21,7 @@ ENV_TOKEN = "WB_TOKEN"
 ENV_SPECS = "WBMCP_SPECS"
 ENV_DATABASE = "WBMCP_DATABASE_URL"
 ENV_REDIS = "WBMCP_REDIS_URL"
+ENV_DATA_DIR = "WBMCP_DATA_DIR"
 PACKAGED_SPECS = Path(__file__).resolve().parent / "specs"
 
 
@@ -155,6 +156,8 @@ def load_config(path: str | Path | None = None, env: Mapping[str, str] | None = 
         config.server.database_url = env[ENV_DATABASE]
     if env.get(ENV_REDIS):
         config.server.redis_url = env[ENV_REDIS]
+    if env.get(ENV_DATA_DIR):   # удобно в контейнере: том вместо домашнего каталога
+        config.server.data_dir = Path(env[ENV_DATA_DIR])
     if not config.sellers and env.get(ENV_TOKEN):
         config.sellers.append(SellerConfig(alias="default", token_env=ENV_TOKEN))
     aliases = [s.alias for s in config.sellers]

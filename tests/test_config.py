@@ -114,3 +114,9 @@ def test_data_dir_expands_home():
 
     assert "~" not in str(ServerConfig().resolved_data_dir())
     assert Path(ServerConfig().resolved_data_dir()).is_absolute()
+
+
+def test_data_dir_from_env(tmp_path):
+    config = load_config(env={"WBMCP_DATA_DIR": str(tmp_path / "vol")})
+    assert config.server.data_dir == tmp_path / "vol"
+    assert config.server.resolved_data_dir() == tmp_path / "vol"

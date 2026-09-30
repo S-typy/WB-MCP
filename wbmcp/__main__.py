@@ -10,7 +10,16 @@ from pathlib import Path
 from typing import Any
 
 from wbmcp import __version__
-from wbmcp.config import ConfigError, load_config
+from wbmcp.config import ConfigError, find_specs_dir, load_config
+
+
+def version_line(env: Mapping[str, str] | None = None) -> str:
+    """Версия пакета и дата снимка спецификаций: API WB меняется, дата важна не меньше версии."""
+    try:
+        snapshot = find_specs_dir(None, env).name
+    except ConfigError:
+        snapshot = "нет"
+    return f"wb-mcp {__version__} (снимок спецификаций {snapshot})"
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -34,7 +43,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--smoke", action="store_true",
                         help="пробный прогон: кабинеты, ping, seller-info, новости, квота")
     parser.add_argument("--seller", help="алиас кабинета для --smoke")
-    parser.add_argument("--version", action="version", version=f"wb-mcp {__version__}")
+    parser.add_argument("--version", action="version", version=version_line())
     return parser
 
 

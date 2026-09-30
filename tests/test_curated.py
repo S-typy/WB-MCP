@@ -109,10 +109,12 @@ async def test_orders_and_cards_pagination(server, backend):
     assert backend.requests[-1].url.params["locale"] == "ru"
 
 
-async def test_feedbacks_warehouses(server):
+async def test_feedbacks_warehouses(server, backend):
     fb = payload(await server.call_tool("wb_feedbacks", {"take": 5, "nm_id": 3}))
-    assert fb["data"]["echo"]["isAnswered"] == "false" and fb["data"]["echo"]["nmId"] == "3"
-    assert "dateFrom" not in fb["data"]["echo"]
+    assert fb["feedbacks"] == [{"id": "f1"}] and fb["count"] == 1 and fb["pages"] == 1
+    sent = dict(backend.requests[-1].url.params)
+    assert sent["isAnswered"] == "false" and sent["nmId"] == "3" and sent["skip"] == "0"
+    assert "dateFrom" not in sent
     wh = payload(await server.call_tool("wb_warehouses", {}))
     assert wh["data"][0]["id"] == 7
 
@@ -123,8 +125,9 @@ async def test_prices_and_stocks_writes(server, backend):
     dry = payload(await server.call_tool("wb_prices_set",
                                          {"data": [{"nmID": 1, "price": 100}], "dry_run": True}))
     assert dry["dry_run"] and dry["request"]["body"] == {"data": [{"nmID": 1, "price": 100}]}
-    done = payload(await server.call_tool("wb_prices_set", {"data": [{"nmID": 1, "price": 100}]}))
-    assert done["data"] == {"data": {"id": 55}}
+    done = payload(await server.call_tool("wb_prices_set", {"data": [{"nmID": 1, "price": 100}],
+                                                            "wait": False}))
+    assert done["data"] == {"data": {"id": 55}} and "outcome" not in done
     with pytest.raises(ToolError):
         await server.call_tool("wb_stocks_set", {"warehouse_id": 7})
     stocks = payload(await server.call_tool(

@@ -368,6 +368,11 @@ def test_cli(tmp_path, make_token, capsys):
     with pytest.raises(SystemExit) as info:
         main(["--version"], env={})
     assert info.value.code == 0
+    out = capsys.readouterr().out
+    assert "wb-mcp 0." in out and "снимок спецификаций 20" in out
+    from wbmcp.__main__ import version_line
+
+    assert version_line({"WBMCP_SPECS": str(tmp_path / "nope")}).endswith("нет)")
 
 
 async def test_remote_clients_upload_only_from_uploads_dir(server, app, tmp_path):

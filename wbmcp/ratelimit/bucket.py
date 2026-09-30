@@ -10,6 +10,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
+# Недобор меньше этого считаем нулём: иначе округление float даёт ожидание в 1e-17 секунды,
+# а с подменными часами такой sleep не двигает время и лимитер крутится на месте.
+EPSILON = 1e-9
+
 
 @dataclass(frozen=True)
 class BucketState:
@@ -49,7 +53,7 @@ class TokenBucket:
         if state.blocked_until > now:
             wait = state.blocked_until - now
         missing = cost - state.tokens
-        if missing > 0:
+        if missing > EPSILON:   # крошечный недобор от округления float — не повод ждать
             wait = max(wait, missing * self.interval_s)
         return wait
 
